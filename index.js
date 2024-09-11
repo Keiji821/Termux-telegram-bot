@@ -171,6 +171,17 @@ rl.on('line', (option) => {
                     bot = new TelegramBot(token, { polling: true });
                     bot.getMe().then(startupMessage);
                     bot.on('message', handleMessage);
+
+                    // Mover el registro de eventos aquí, después de inicializar el bot
+                    bot.on('callback_query', async (query) => {
+                        const data = query.data.split('|');
+                        const command = data[0];
+                        const handler = commandHandlers[command];
+                        if (handler) {
+                            await handler.handleCallbackQuery(query, bot);
+                        }
+                    });
+
                     rl.question('Ingrese el prefijo del bot: ', (prefix) => {
                         if (prefix === '') {
                             console.log('Prefijo inválido');
@@ -200,14 +211,4 @@ rl.on('line', (option) => {
     }
 }).on('close', () => {
     process.exit();
-});
-
-// Manejo de callback queries
-bot.on('callback_query', async (query) => {
-    const data = query.data.split('|');
-    const command = data[0];
-    const handler = commandHandlers[command];
-    if (handler) {
-        await handler.handleCallbackQuery(query, bot);
-    }
 });
