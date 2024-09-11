@@ -99,7 +99,7 @@ function generateCards(year, month, bin, ccv) {
       Quantity: '1',
       Bin: bin,
       Format: 'PIPE'
-    }).trim();
+    }).trim().split('|')[0];  // Corregir para que no se repitan los datos
 
     cards.push(`${cardNumber}|${month}|${year}|${cardCCV}`);
   }
