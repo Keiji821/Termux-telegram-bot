@@ -32,6 +32,7 @@ const startupMessage = (bot) => {
 };
 
 
+
 // Manejador de comandos
 const commandHandler = async (msg, prefix) => {
     try {
@@ -40,17 +41,16 @@ const commandHandler = async (msg, prefix) => {
         const commandName = args.shift().toLowerCase();
         let commandFile = null;
 
-        // Carpeta principal donde se encuentran todos los comandos
         const mainFolder = './comandos';
 
-        // Función recursiva para buscar en subcarpetas
         const searchCommandFile = (folderPath, commandName) => {
+            console.log(`Buscando en: ${folderPath}`);
             const files = fs.readdirSync(folderPath);
 
             for (const file of files) {
                 const filePath = path.join(folderPath, file);
+                console.log(`Verificando: ${filePath}`);
                 if (fs.statSync(filePath).isDirectory()) {
-                    // Recursivamente buscar en subcarpetas
                     searchCommandFile(filePath, commandName);
                 } else if (file === `${commandName}.js`) {
                     commandFile = filePath;
