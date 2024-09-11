@@ -9,7 +9,7 @@ module.exports = {
     const parts = input.split('|');
 
     if (parts.length !== 4) {
-      return bot.sendMessage(msg.chat.id, 'Error: Formato de entrada incorrecto. Uso: /gen <bin>|<mes>|<año>|<ccv>');
+      return bot.sendMessage(msg.chat.id, '**Error:** Formato de entrada incorrecto. Uso: /gen <bin>|<mes>|<año>|<ccv>', { parse_mode: 'Markdown' });
     }
 
     let bin = parts[0];
@@ -26,7 +26,7 @@ module.exports = {
       const json = response.data;
 
       if (!json.status) {
-        return bot.sendMessage(msg.chat.id, 'Error: BIN no encontrado o inválido.');
+        return bot.sendMessage(msg.chat.id, '**Error:** BIN no encontrado o inválido.', { parse_mode: 'Markdown' });
       }
 
       const bank = json.bank || 'Desconocido';
@@ -40,14 +40,14 @@ module.exports = {
 
       const message = `
 **Card Generator**
-Format: ${bin}|${month}|${year}|${ccv}
+Formato: ${bin}|${month}|${year}|${ccv}
 
 ${cards.map(card => `**${card}**`).join('\n')}
 
 **Generated Cards**
 
-**Bin Data:** ${brand} - ${type} - ${level}
-**Bank Data:** [${bank} - ${countryEmoji} - ${countryName}]
+**Bin Data:** ${brand} - ${type} - ${level}  
+**Bank Data:** ${bank} - ${countryEmoji} - ${countryName}
       `;
 
       const opts = {
@@ -63,7 +63,7 @@ ${cards.map(card => `**${card}**`).join('\n')}
 
     } catch (error) {
       console.error('Error al obtener datos de la API:', error.message);
-      return bot.sendMessage(msg.chat.id, 'Error al generar tarjetas de crédito. Intente nuevamente más tarde.');
+      return bot.sendMessage(msg.chat.id, '**Error:** al generar tarjetas de crédito. Intente nuevamente más tarde.', { parse_mode: 'Markdown' });
     }
   },
 
