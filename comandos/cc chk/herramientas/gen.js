@@ -29,7 +29,7 @@ module.exports = {
       const json = response.data;
 
       if (!json.status) {
-        throw new Error("No se encontraron datos para este BIN");
+        return bot.sendMessage(msg.chat.id, 'Error: BIN no encontrado o inválido.');
       }
 
       // Datos del BIN
