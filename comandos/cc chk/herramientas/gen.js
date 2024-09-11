@@ -17,10 +17,9 @@ module.exports = {
     let year = parts[2];
     let ccv = parts[3];
 
-    // Verificamos si el mes, año o ccv deben ser aleatorios
+    // Generar aleatoriamente si se especifica 'rnd' o 'xxx'
     month = month === 'rnd' || month === 'xxx' ? getRandomMonth() : month;
     year = year === 'rnd' || year === 'xxx' ? getRandomYear() : year;
-    ccv = ccv === 'rnd' || ccv === 'xxx' ? 'rnd' : ccv;  // El valor "rnd" para que la librería genere CCV aleatorio
 
     try {
       const response = await axios.get(`https://binchk-api.vercel.app/bin=${bin}`);
@@ -37,7 +36,7 @@ module.exports = {
       const countryEmoji = json.flag || '';
       const countryName = json.country || 'Desconocido';
 
-      // Generamos las tarjetas
+      // Generar las tarjetas con valores aleatorios para CCV si es 'rnd' o 'xxx'
       const cards = generateCards(year, month, bin, ccv);
 
       const message = `
@@ -55,7 +54,7 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
       const opts = {
         reply_markup: {
           inline_keyboard: [
-            [{ text: 'Regenerar Tarjetas', callback_data: `regenerate|${bin}|rnd|rnd|rnd` }] // Forzamos a valores aleatorios en la regeneración
+            [{ text: 'Regenerar Tarjetas', callback_data: `regenerate|${bin}|rnd|rnd|rnd` }] // Forzar regeneración aleatoria
           ]
         }
       };
@@ -74,28 +73,21 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
 
     if (command === 'regenerate') {
       const bin = data[1];
-      const month = data[2];
-      const year = data[3];
-      const ccv = data[4];
-      
-      // Forzamos a usar valores aleatorios en la regeneración si se especifica 'rnd'
-      const args = [
-        bin,
-        month === 'rnd' ? getRandomMonth() : month,
-        year === 'rnd' ? getRandomYear() : year,
-        ccv === 'rnd' ? getRandomCCV() : ccv
-      ];
-      
-      this.execute(query.message, args, bot);
+      const month = data[2] === 'rnd' ? getRandomMonth() : data[2];
+      const year = data[3] === 'rnd' ? getRandomYear() : data[3];
+      const ccv = data[4] === 'rnd' ? 'rnd' : data[4];  // Mantener "rnd" para CCV aleatorio
+
+      // Llamamos de nuevo a execute para regenerar las tarjetas
+      this.execute(query.message, [bin, month, year, ccv], bot);
     }
   }
 };
 
 function generateCards(year, month, bin, ccv) {
-  // Utilizamos la API de namso para generar las tarjetas con el formato PIPE
-  const res = namso.gen({
+  // Usar namso para generar las tarjetas
+  return namso.gen({
     ShowCCV: true,
-    CCV: ccv, // Aquí "rnd" si queremos generar un CCV aleatorio
+    CCV: ccv === 'rnd' ? 'rnd' : ccv, // Generar CCV aleatorio si se especifica 'rnd'
     ShowExpDate: true,
     ShowBank: false,
     Month: month,
@@ -103,12 +95,10 @@ function generateCards(year, month, bin, ccv) {
     Quantity: '10',
     Bin: bin,
     Format: 'PIPE'
-  });
-
-  // No necesitamos hacer split ya que el resultado es correctamente formateado con |
-  const cards = res.split('\n').filter(card => card.length > 0); // Filtramos tarjetas vacías
-  
-  return cards;
+  })
+  .split('\n')  // Dividimos las tarjetas generadas por líneas
+  .map(card => card.trim())
+  .filter(card => card.length > 0); // Filtrar tarjetas vacías
 }
 
 function getRandomMonth() {
@@ -123,5 +113,5 @@ function getRandomYear() {
 }
 
 function getRandomCCV() {
-  return Math.floor(100 + Math.random() * 900).toString();  // Generamos un CCV aleatorio de 3 dígitos
+  return Math.floor(100 + Math.random() * 900).toString();  // CCV aleatorio de 3 dígitos
 }
