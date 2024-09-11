@@ -36,13 +36,14 @@ module.exports = {
       const countryEmoji = json.flag || '';
       const countryName = json.country || 'Desconocido';
 
-      const cards = generateCards(year, month, bin);
+      // Generamos las tarjetas
+      const cards = generateCards(year, month, bin, ccv);
 
       const message = `
 Card Generator
 Formato: ${bin}|${month}|${year}|${ccv}
 
-${cards.filter(Boolean).join('\n')}  // Aquí filtramos para evitar el "undefined"
+${cards.join('\n')}
 
 Generated Cards
 
@@ -80,23 +81,24 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
   }
 };
 
-function generateCards(year, month, bin) {
+function generateCards(year, month, bin, ccv) {
+  // Utilizamos la API de namso para generar las tarjetas con el formato PIPE
   const res = namso.gen({
     ShowCCV: true,
+    CCV: ccv === 'rnd' ? 'rnd' : ccv,
     ShowExpDate: true,
     ShowBank: false,
     Month: month,
     Year: year,
-    Quantity: 10,
+    Quantity: '10',
     Bin: bin,
-    Format: "PIPE"
+    Format: 'PIPE'
   });
 
-  // Filtramos para evitar elementos vacíos y corregir el problema de "undefined"
-  const cards = res.split("|").filter(card => card && card.length >= 16);
+  // No necesitamos hacer split ya que el resultado es correctamente formateado con |
+  const cards = res.split('\n').filter(card => card.length > 0); // Filtramos tarjetas vacías
   
-  // Si una tarjeta no es válida, evitamos devolver "undefined"
-  return cards.map(card => card ? `${card}|${month}|${year}|${getRandomCCV()}` : '').filter(Boolean);
+  return cards;
 }
 
 function getRandomMonth() {
