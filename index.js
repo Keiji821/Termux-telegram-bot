@@ -32,52 +32,57 @@ const startupMessage = (bot) => {
     console.log('[32m[1m 「🟢」 El bot ' + bot.username + ' se ha conectado correctamente! [0m');
 };
 
+
 // Manejador de comandos
-const commandHandler = async (msg, prefix) => {
-    try {
-        if (!msg.text.startsWith(prefix)) return;
-        const args = msg.text.slice(prefix.length).trim().split(/ +/);
-        const commandName = args.shift().toLowerCase();
-        let commandFile = null;
+const commandHandler = async (msg, prefix, bot) => {
+  try {
+    if (!msg.text.startsWith(prefix)) return;
+    const args = msg.text.slice(prefix.length).trim().split(/ +/);
+    const commandName = args.shift().toLowerCase();
+    let commandFile = null;
 
-        const mainFolder = './comandos';
+    const mainFolder = './comandos';
 
-        const searchCommandFile = (folderPath, commandName) => {
-            console.log(`Buscando en: ${folderPath}`);
-            const files = fs.readdirSync(folderPath);
+    const searchCommandFile = async (folderPath, commandName) => {
+      console.log(`Buscando en: ${folderPath}`);
+      const files = await fs.readdir(folderPath);
 
-            for (const file of files) {
-                const filePath = path.join(folderPath, file);
-                console.log(`Verificando: ${filePath}`);
-                if (fs.statSync(filePath).isDirectory()) {
-                    // Recursivamente buscar en subcarpetas
-                    searchCommandFile(filePath, commandName);
-                } else if (file === `${commandName}.js`) {
-                    commandFile = filePath;
-                    return;
-                }
-            }
-        };
+      for (const file of files) {
+        const filePath = path.join(folderPath, file);
+        console.log(`Verificando: ${filePath}`);
+        const stat = await fs.stat(filePath);
 
-        searchCommandFile(mainFolder, commandName);
-
-        if (!commandFile) {
-            console.log('[31m Comando no encontrado: ' + commandName + '[0m');
-            return;
+        if (stat.isDirectory()) {
+          // Recursivamente buscar en subcarpetas
+          await searchCommandFile(filePath, commandName);
+        } else if (file === `${commandName}.js`) {
+          commandFile = filePath;
+          return;
         }
+      }
+    };
 
-        const command = require(commandFile);
-        if (!command.execute) {
-            console.log('[33m El comando ' + commandName + ' no tiene una función execute[0m');
-            return;
-        }
+    await searchCommandFile(mainFolder, commandName);
 
-        await command.execute(msg, args, bot);
-    } catch (error) {
-        console.error('[31m Error al ejecutar comando: ' + error + '[0m');
-        bot.sendMessage(msg.chat.id, `Error al ejecutar comando: ${error}`);
+    if (!commandFile) {
+      console.log(`[31m Comando no encontrado: ${commandName}[0m`);
+      return;
     }
+
+    const command = await import(commandFile);
+    if (!command.execute) {
+      console.log(`[33m El comando ${commandName} no tiene una función execute[0m`);
+      return;
+    }
+
+    await command.execute(msg, args, bot);
+  } catch (error) {
+    console.error(`[31m Error al ejecutar comando: ${error}[0m`);
+    bot.sendMessage(msg.chat.id, `Error al ejecutar comando: ${error}`);
+  }
 };
+
+
 
 // Función para manejar mensajes de Telegram
 const handleMessage = async (msg) => {
