@@ -62,25 +62,33 @@ const commandHandler = async (msg, prefix, bot) => {
       }
     };
 
-    await searchCommandFile(mainFolder, commandName);
-
-    if (!commandFile) {
-      console.log(`[31m Comando no encontrado: ${commandName}[0m`);
+    const searchCommandFile = async (folderPath, commandName) => {
+  console.log(`Buscando en: ${folderPath}`);
+  fs.readdir(folderPath, (err, files) => {
+    if (err) {
+      console.error(err);
       return;
     }
-
-    const command = await import(commandFile);
-    if (!command.execute) {
-      console.log(`[33m El comando ${commandName} no tiene una función execute[0m`);
-      return;
+    for (const file of files) {
+      const filePath = path.join(folderPath, file);
+      console.log(`Verificando: ${filePath}`);
+      fs.stat(filePath, (err, stat) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        if (stat.isDirectory()) {
+          // Recursivamente buscar en subcarpetas
+          searchCommandFile(filePath, commandName);
+        } else if (file === `${commandName}.js`) {
+          commandFile = filePath;
+          return;
+        }
+      });
     }
-
-    await command.execute(msg, args, bot);
-  } catch (error) {
-    console.error(`[31m Error al ejecutar comando: ${error}[0m`);
-    bot.sendMessage(msg.chat.id, `Error al ejecutar comando: ${error}`);
-  }
+  });
 };
+
 
 
 
