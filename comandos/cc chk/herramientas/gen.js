@@ -38,30 +38,44 @@ module.exports = {
       const type = json.type || 'Desconocido';
       const level = json.level || 'Desconocido';
       const phone = json.phone || 'Desconocido';
+      const countryCode = json.country?.alpha2 || ''; // Código de país
+
+      // Convertir código de país en emoji de bandera
+      const countryEmoji = getFlagEmoji(countryCode);
+      const countryName = json.country?.name || 'Desconocido';
 
       // Generar las tarjetas de crédito
       const cards = generateCards(year, month, bin);
 
       // Crear mensaje con la información generada
       const message = `
-        💳 **Generador de Tarjetas**
-        **Formato:** ${bin}|${month}|${year}
-        **Datos del BIN:** ${brand} - ${type} - ${level}
-        **Datos del Banco:** ${bank} - Tel: ${phone}
-        **Tarjetas Generadas:**
-        ${cards.join('\n')}
+\`\`\`
+Card Generator
+Format: ${bin}|${month}|${year}|${ccv}
+\`\`\`
+
+${cards.map(card => `\`${card}\``).join('\n')}
+
+\`\`\`
+Generated Cards
+\`\`\`
+
+**Bin Data:** ${brand} - ${type} - ${level}
+**Bank Data:** [${bank} - ${countryEmoji} - ${countryName}]
       `;
 
-      // Enviar mensaje con las tarjetas generadas
-      await bot.sendMessage(msg.chat.id, message, { parse_mode: 'Markdown' });
-
-      // Crear opción para regenerar tarjetas
+      // Opciones para el botón de regenerar
       const opts = {
         reply_markup: {
-          inline_keyboard: [[{ text: 'Regenerar Tarjetas', callback_data: `regenerate|${bin}|${month}|${year}|${ccv}` }]]
-        }
+          inline_keyboard: [
+            [{ text: 'Regenerar Tarjetas', callback_data: `regenerate|${bin}|${month}|${year}|${ccv}` }]
+          ]
+        },
+        parse_mode: 'Markdown'
       };
-      await bot.sendMessage(msg.chat.id, '¿Quieres regenerar las tarjetas?', opts);
+
+      // Enviar el mensaje con las tarjetas generadas y el botón en el mismo mensaje
+      await bot.sendMessage(msg.chat.id, message, opts);
 
     } catch (error) {
       console.error('Error al obtener datos de la API:', error.message);
@@ -100,6 +114,14 @@ function generateCards(year, month, bin) {
   // Asegurarse de que las tarjetas se generen correctamente
   const cards = res.split("|").filter(card => card && card.length >= 16);
   return cards.map(card => `${card}|${month}|${year}|${getRandomCCV()}`);
+}
+
+// Función auxiliar para convertir el código de país en emoji de bandera
+function getFlagEmoji(countryCode) {
+  if (!countryCode) return '';
+  return countryCode
+    .toUpperCase()
+    .replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt()));
 }
 
 // Funciones auxiliares para generar valores aleatorios
