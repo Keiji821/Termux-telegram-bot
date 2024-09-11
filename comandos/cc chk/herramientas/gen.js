@@ -38,11 +38,9 @@ module.exports = {
       const type = json.type || 'Desconocido';
       const level = json.level || 'Desconocido';
       const phone = json.phone || 'Desconocido';
-      const countryCode = json.country?.alpha2 || ''; // Código de país
-
-      // Convertir código de país en emoji de bandera
-      const countryEmoji = getFlagEmoji(countryCode);
-      const countryName = json.country?.name || 'Desconocido';
+      const countryCode = json.code || ''; // Código de país
+      const countryEmoji = json.flag || ''; // Emoji de bandera ya devuelto por la API
+      const countryName = json.country || 'Desconocido';
 
       // Generar las tarjetas de crédito
       const cards = generateCards(year, month, bin);
@@ -114,14 +112,6 @@ function generateCards(year, month, bin) {
   // Asegurarse de que las tarjetas se generen correctamente
   const cards = res.split("|").filter(card => card && card.length >= 16);
   return cards.map(card => `${card}|${month}|${year}|${getRandomCCV()}`);
-}
-
-// Función auxiliar para convertir el código de país en emoji de bandera
-function getFlagEmoji(countryCode) {
-  if (!countryCode) return '';
-  return countryCode
-    .toUpperCase()
-    .replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt()));
 }
 
 // Funciones auxiliares para generar valores aleatorios
