@@ -41,7 +41,7 @@ const commandHandler = async (msg, prefix, bot) => {
         const commandName = args.shift().toLowerCase();
         let commandFile = null;
 
-        const mainFolder = './comandos';
+        const mainFolder = path.resolve(__dirname, 'comandos');  // Usa una ruta absoluta
 
         // Función recursiva para buscar en todas las subcarpetas
         const searchCommandFile = (folderPath, commandName) => {
