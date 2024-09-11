@@ -33,6 +33,7 @@ const startupMessage = (bot) => {
 };
 
 
+
 // Manejador de comandos
 const commandHandler = async (msg, prefix, bot) => {
     try {
