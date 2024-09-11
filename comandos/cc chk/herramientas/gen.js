@@ -17,10 +17,10 @@ module.exports = {
     let year = parts[2];
     let ccv = parts[3];
 
-    // Generamos valores aleatorios si el usuario especifica 'rnd'
-    month = month === 'rnd' ? getRandomMonth() : month;
-    year = year === 'rnd' ? getRandomYear() : year;
-    ccv = ccv === 'rnd' ? getRandomCCV() : ccv;
+    // Verificamos si el mes, año o ccv deben ser aleatorios
+    month = month === 'rnd' || month === 'xxx' ? getRandomMonth() : month;
+    year = year === 'rnd' || year === 'xxx' ? getRandomYear() : year;
+    ccv = ccv === 'rnd' || ccv === 'xxx' ? 'rnd' : ccv;  // El valor "rnd" para que la librería genere CCV aleatorio
 
     try {
       const response = await axios.get(`https://binchk-api.vercel.app/bin=${bin}`);
@@ -95,7 +95,7 @@ function generateCards(year, month, bin, ccv) {
   // Utilizamos la API de namso para generar las tarjetas con el formato PIPE
   const res = namso.gen({
     ShowCCV: true,
-    CCV: ccv === 'rnd' ? 'rnd' : ccv,
+    CCV: ccv, // Aquí "rnd" si queremos generar un CCV aleatorio
     ShowExpDate: true,
     ShowBank: false,
     Month: month,
@@ -123,5 +123,5 @@ function getRandomYear() {
 }
 
 function getRandomCCV() {
-  return Math.floor(100 + Math.random() * 900).toString();
+  return Math.floor(100 + Math.random() * 900).toString();  // Generamos un CCV aleatorio de 3 dígitos
 }
