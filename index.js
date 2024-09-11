@@ -51,6 +51,7 @@ const commandHandler = async (msg, prefix) => {
                 const filePath = path.join(folderPath, file);
                 console.log(`Verificando: ${filePath}`);
                 if (fs.statSync(filePath).isDirectory()) {
+                    // Recursivamente buscar en subcarpetas
                     searchCommandFile(filePath, commandName);
                 } else if (file === `${commandName}.js`) {
                     commandFile = filePath;
