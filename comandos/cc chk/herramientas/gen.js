@@ -40,12 +40,11 @@ module.exports = {
       const cards = generateCards(year, month, bin, ccv);
 
       const message = `
-Card Generator
 Formato: ${bin}|${month}|${year}|${ccv}
 
-${cards.join('\n')}
+Tarjetas generadas:
 
-Generated Cards
+${cards.join('\n')}
 
 Bin Data: ${brand} - ${type} - ${level}
 Bank Data: ${bank} - ${countryEmoji} - ${countryName}
@@ -54,7 +53,7 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
       const opts = {
         reply_markup: {
           inline_keyboard: [
-            [{ text: 'Regenerar Tarjetas', callback_data: `regenerate|${bin}|rnd|rnd|rnd` }] // Forzar regeneración aleatoria
+            [{ text: 'Regenerar Tarjetas', callback_data: `regenerate|${bin}` }] // Forzar regeneración aleatoria
           ]
         }
       };
