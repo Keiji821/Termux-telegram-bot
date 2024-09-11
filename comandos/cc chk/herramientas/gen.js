@@ -9,7 +9,7 @@ module.exports = {
     const parts = input.split('|');
 
     if (parts.length !== 4) {
-      return bot.sendMessage(msg.chat.id, '**Error:** Formato de entrada incorrecto. Uso: /gen <bin>|<mes>|<año>|<ccv>', { parse_mode: 'Markdown' });
+      return bot.sendMessage(msg.chat.id, 'Error: Formato de entrada incorrecto. Uso: /gen <bin>|<mes>|<año>|<ccv>', { parse_mode: 'MarkdownV2' });
     }
 
     let bin = parts[0];
@@ -26,7 +26,7 @@ module.exports = {
       const json = response.data;
 
       if (!json.status) {
-        return bot.sendMessage(msg.chat.id, '**Error:** BIN no encontrado o inválido.', { parse_mode: 'Markdown' });
+        return bot.sendMessage(msg.chat.id, 'Error: BIN no encontrado o inválido.', { parse_mode: 'MarkdownV2' });
       }
 
       const bank = json.bank || 'Desconocido';
@@ -38,16 +38,17 @@ module.exports = {
 
       const cards = generateCards(year, month, bin);
 
+      // Escapando caracteres especiales para MarkdownV2
       const message = `
-**Card Generator**
-Formato: ${bin}|${month}|${year}|${ccv}
+*Card Generator*
+\`Formato:\` ${escapeMarkdown(bin)}|${escapeMarkdown(month)}|${escapeMarkdown(year)}|${escapeMarkdown(ccv)}
 
-${cards.map(card => `**${card}**`).join('\n')}
+${cards.map(card => `\`${escapeMarkdown(card)}\``).join('\n')}
 
-**Generated Cards**
+*Generated Cards*
 
-**Bin Data:** ${brand} - ${type} - ${level}  
-**Bank Data:** ${bank} - ${countryEmoji} - ${countryName}
+*Bin Data:* ${escapeMarkdown(brand)} - ${escapeMarkdown(type)} - ${escapeMarkdown(level)}
+*Bank Data:* ${escapeMarkdown(bank)} - ${countryEmoji} - ${escapeMarkdown(countryName)}
       `;
 
       const opts = {
@@ -56,14 +57,14 @@ ${cards.map(card => `**${card}**`).join('\n')}
             [{ text: 'Regenerar Tarjetas', callback_data: `regenerate|${bin}|${month}|${year}|${ccv}` }]
           ]
         },
-        parse_mode: 'Markdown'
+        parse_mode: 'MarkdownV2' // Cambiamos a MarkdownV2
       };
 
       await bot.sendMessage(msg.chat.id, message, opts);
 
     } catch (error) {
       console.error('Error al obtener datos de la API:', error.message);
-      return bot.sendMessage(msg.chat.id, '**Error:** al generar tarjetas de crédito. Intente nuevamente más tarde.', { parse_mode: 'Markdown' });
+      return bot.sendMessage(msg.chat.id, 'Error al generar tarjetas de crédito. Intente nuevamente más tarde.', { parse_mode: 'MarkdownV2' });
     }
   },
 
@@ -93,8 +94,14 @@ function generateCards(year, month, bin) {
     Format: "PIPE"
   });
 
+  // Limpieza de tarjetas para evitar "undefined"
   const cards = res.split("|").filter(card => card && card.length >= 16);
   return cards.map(card => `${card}|${month}|${year}|${getRandomCCV()}`);
+}
+
+// Función para escapar caracteres especiales para MarkdownV2
+function escapeMarkdown(text) {
+  return text.replace(/([_*[\]()~`>#+=|{}.!-])/g, '\\$1');
 }
 
 function getRandomMonth() {
