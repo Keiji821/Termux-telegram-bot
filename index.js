@@ -117,7 +117,7 @@ const showMenu = () => {
     console.clear();
 
     lolcatjs.fromString(
-        figlet.textSync("TeleBot", {
+        figlet.textSync("TgBot", {
             font: "Slant",
             horizontalLayout: "default",
             verticalLayout: "default",
