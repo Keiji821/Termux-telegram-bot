@@ -31,6 +31,7 @@ const startupMessage = (bot) => {
     console.log('[32m[1m 「🟢」 El bot ' + bot.username + ' se ha conectado correctamente! [0m');
 };
 
+
 // Manejador de comandos
 const commandHandler = async (msg, prefix) => {
     try {
@@ -39,27 +40,26 @@ const commandHandler = async (msg, prefix) => {
         const commandName = args.shift().toLowerCase();
         let commandFile = null;
 
-        const folders = [
-            'anime',
-            'interacción',
-            'utilidades',
-            'herramientas',
-            'música',
-            'gestión',
-            'auto moderación',
-            'seguridad',
-            'moderación',
-            'administración',
-            'cc chk',
-        ];
+        // Carpeta principal donde se encuentran todos los comandos
+        const mainFolder = './comandos';
 
-        for (const folder of folders) {
-            const folderPath = `./comandos/${folder}/${commandName}.js`;
-            if (fs.existsSync(folderPath)) {
-                commandFile = folderPath;
-                break;
+        // Función recursiva para buscar en subcarpetas
+        const searchCommandFile = (folderPath, commandName) => {
+            const files = fs.readdirSync(folderPath);
+
+            for (const file of files) {
+                const filePath = path.join(folderPath, file);
+                if (fs.statSync(filePath).isDirectory()) {
+                    // Recursivamente buscar en subcarpetas
+                    searchCommandFile(filePath, commandName);
+                } else if (file === `${commandName}.js`) {
+                    commandFile = filePath;
+                    return;
+                }
             }
-        }
+        };
+
+        searchCommandFile(mainFolder, commandName);
 
         if (!commandFile) {
             console.log('[31m Comando no encontrado: ' + commandName + '[0m');
@@ -78,6 +78,8 @@ const commandHandler = async (msg, prefix) => {
         bot.sendMessage(msg.chat.id, `Error al ejecutar comando: ${error}`);
     }
 };
+
+
 
 // Función para manejar mensajes de Telegram
 const handleMessage = async (msg) => {
