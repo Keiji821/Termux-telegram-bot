@@ -20,7 +20,7 @@ const rl = readline.createInterface({
 
 // Mostrar mensaje de inicio
 const startupMessage = (bot) => {
-    lolcatjs.fromString(`\n 「🟢」 El bot ${bot.username} se ha conectado correctamente!`);
+    lolcatjs.fromString(`\n ● El bot ${bot.username} se ha conectado correctamente!`);
 };
 
 // Manejador de comandos
@@ -140,7 +140,7 @@ const showMenu = () => {
     lolcatjs.fromString('▏[2] Actualizar');
     lolcatjs.fromString('▏[3] Instalar dependencias');
     lolcatjs.fromString('▏[4] Salir');
-    lolcatjs.fromString('⸌⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⸍');
+    lolcatjs.fromString('⸌⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⸍');
 
     rl.setPrompt(`  ➤ `);
     rl.prompt();
