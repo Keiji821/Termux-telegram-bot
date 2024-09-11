@@ -76,7 +76,7 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
       const year = getRandomYear();   // Regenerar aleatoriamente
       const ccv = getRandomCCV();     // Regenerar aleatoriamente
 
-      // Llamar de nuevo a execute para regenerar las tarjetas
+      // Enviar un nuevo mensaje con las tarjetas regeneradas
       await this.execute(query.message, [bin, month, year, ccv], bot);
 
       // Confirmar que el botón ha sido presionado
