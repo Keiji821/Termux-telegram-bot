@@ -42,7 +42,7 @@ module.exports = {
 Card Generator
 Formato: ${bin}|${month}|${year}|${ccv}
 
-${cards.join('\n')}
+${cards.filter(Boolean).join('\n')}  // Aquí filtramos para evitar el "undefined"
 
 Generated Cards
 
@@ -92,9 +92,11 @@ function generateCards(year, month, bin) {
     Format: "PIPE"
   });
 
-  // Limpieza de tarjetas para evitar "undefined"
+  // Filtramos para evitar elementos vacíos y corregir el problema de "undefined"
   const cards = res.split("|").filter(card => card && card.length >= 16);
-  return cards.map(card => `${card}|${month}|${year}|${getRandomCCV()}`);
+  
+  // Si una tarjeta no es válida, evitamos devolver "undefined"
+  return cards.map(card => card ? `${card}|${month}|${year}|${getRandomCCV()}` : '').filter(Boolean);
 }
 
 function getRandomMonth() {
