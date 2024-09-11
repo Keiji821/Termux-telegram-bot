@@ -29,64 +29,73 @@ const colors = {
 // Mostrar mensaje de inicio
 const startupMessage = (bot) => {
     console.log(' ');
-    console.log('[32m[1m 「🟢」 El bot ' + bot.username + ' se ha conectado correctamente! [0m');
+    console.log('[32m 「🟢」 El bot ' + bot.username + ' se ha conectado correctamente! [0m');
 };
 
 
 // Manejador de comandos
 const commandHandler = async (msg, prefix, bot) => {
-  try {
-    if (!msg.text.startsWith(prefix)) return;
-    const args = msg.text.slice(prefix.length).trim().split(/ +/);
-    const commandName = args.shift().toLowerCase();
-    let commandFile = null;
+try {
+if (!msg.text.startsWith(prefix)) return;
+const args = msg.text.slice(prefix.length).trim().split(/ +/);
+const commandName = args.shift().toLowerCase();
+let commandFile = null;
 
-    const mainFolder = './comandos';
+const mainFolder = './comandos';
 
-    const searchCommandFile = async (folderPath, commandName) => {
-      console.log(`Buscando en: ${folderPath}`);
-      const files = await fs.readdir(folderPath);
+fs.readdir(mainFolder, (err, files) => {
+if (err) {
+console.error(err);
+return;
+}
+for (const file of files) {
+const filePath = path.join(mainFolder, file);
+console.log(`Verificando: ${filePath}`);
+fs.stat(filePath, (err, stat) => {
+if (err) {
+console.error(err);
+return;
+}
+if (stat.isDirectory()) {
+// Recursivamente buscar en subcarpetas
+fs.readdir(filePath, (err, files) => {
+if (err) {
+console.error(err);
+return;
+}
+for (const file of files) {
+const filePath = path.join(filePath, file);
+console.log(`Verificando: ${filePath}`);
+if (file === `${commandName}.js`) {
+commandFile = filePath;
+break;
+}
+}
+});
+} else if (file === `${commandName}.js`) {
+commandFile = filePath;
+break;
+}
+});
+}
+});
 
-      for (const file of files) {
-        const filePath = path.join(folderPath, file);
-        console.log(`Verificando: ${filePath}`);
-        const stat = await fs.stat(filePath);
+if (!commandFile) {
+console.log(`[31m Comando no encontrado: ${commandName}[0m`);
+return;
+}
 
-        if (stat.isDirectory()) {
-          // Recursivamente buscar en subcarpetas
-          await searchCommandFile(filePath, commandName);
-        } else if (file === `${commandName}.js`) {
-          commandFile = filePath;
-          return;
-        }
-      }
-    };
+const command = require(commandFile);
+if (!command.execute) {
+console.log(`[31m El comando ${commandName} no tiene una función execute[0m`);
+return;
+}
 
-    const searchCommandFile = async (folderPath, commandName) => {
-  console.log(`Buscando en: ${folderPath}`);
-  fs.readdir(folderPath, (err, files) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    for (const file of files) {
-      const filePath = path.join(folderPath, file);
-      console.log(`Verificando: ${filePath}`);
-      fs.stat(filePath, (err, stat) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        if (stat.isDirectory()) {
-          // Recursivamente buscar en subcarpetas
-          searchCommandFile(filePath, commandName);
-        } else if (file === `${commandName}.js`) {
-          commandFile = filePath;
-          return;
-        }
-      });
-    }
-  });
+await command.execute(msg, args, bot);
+} catch (error) {
+console.error(`[31m Error al ejecutar comando: ${error}[0m`);
+bot.sendMessage(msg.chat.id, `Error al ejecutar comando: ${error}`);
+}
 };
 
 
@@ -100,18 +109,18 @@ const handleMessage = async (msg) => {
 
 const updateCode = async () => {
     try {
-        console.log(`[32m Actualizando código...[0m`);
+        console.log(`[32m Actualizando código...[0m`);
         await exec('git pull origin main', (err, stdout, stderr) => {
             if (err) {
-                console.error(`[31m Error al actualizar código: ${err}[0m`);
+                console.error(`[32m Error al actualizar código: ${err}[0m`);
                 return;
             }
-            console.log(`[32m Código actualizado correctamente![0m`);
+            console.log(`[32m Código actualizado correctamente![0m`);
             console.log(stdout);
             console.error(stderr);
             exec('node index.js', (err, stdout, stderr) => {
                 if (err) {
-                    console.error(`[31m Error al reiniciar el bot: ${err}[0m`);
+                    console.error(`[31m Error al reiniciar el bot: ${err}[0m`);
                     return;
                 }
                 console.clear();
@@ -119,26 +128,26 @@ const updateCode = async () => {
             });
         });
     } catch (error) {
-        console.error(`[31m Error al actualizar código: ${error}[0m`);
+        console.error(`[31m Error al actualizar código: ${error}[0m`);
     }
 };
 
 const installDependencies = async () => {
     try {
-        console.log(`[32m Instalando dependencias...[0m`);
+        console.log(`[32m Instalando dependencias...[0m`);
         await exec('npm install node-telegram-bot-api', (err, stdout, stderr) => {
             if (err) {
-                console.error(`[31m Error al instalar dependencias: ${err}[0m`);
+                console.error(`[31m Error al instalar dependencias: ${err}[0m`);
                 return;
             }
-            console.log(`[32m Dependencias instaladas correctamente![0m`);
+            console.log(`[32m Dependencias instaladas correctamente![0m`);
             console.log(stdout);
             console.error(stderr);
             console.clear();
             showMenu();
         });
     } catch (error) {
-        console.error(`[31m Error al instalar dependencias: ${error}[0m`);
+        console.error(`[31m Error al instalar dependencias: ${error}[0m`);
     }
 };
 
@@ -166,7 +175,7 @@ const showMenu = () => {
     lolcatjs.fromString('▏[4] Salir                   ︳');
     lolcatjs.fromString('⸌⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⸍');
     lolcatjs.fromString(' ');
-    rl.setPrompt(`[32m[1m  ➤ `);
+    rl.setPrompt(`[32m  ➤ `);
     lolcatjs.fromString(' ');
     rl.prompt(); 
 };
