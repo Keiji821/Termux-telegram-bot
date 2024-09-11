@@ -79,19 +79,19 @@ commandFile = filePath;
 });
 
 if (!commandFile) {
-console.log(`[31m Comando no encontrado: ${commandName}[0m`);
+console.log(`[31m Comando no encontrado: ${commandName}`);
 return;
 }
 
 const command = require(commandFile);
 if (!command.execute) {
-console.log(`[33m El comando ${commandName} no tiene una función execute[0m`);
+console.log(`[31m El comando ${commandName} no tiene una función execute`);
 return;
 }
 
 await command.execute(msg, args, bot);
 } catch (error) {
-console.error(`[31m Error al ejecutar comando: ${error}[0m`);
+console.error(`[31m Error al ejecutar comando: ${error}`);
 bot.sendMessage(msg.chat.id, `Error al ejecutar comando: ${error}`);
 }
 };
