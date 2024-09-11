@@ -2,9 +2,10 @@ const TelegramBot = require('node-telegram-bot-api');
 const fs = require('fs');
 const readline = require('readline');
 const git = require('simple-git')();
-var figlet = require("figlet");
+const figlet = require('figlet');
 const lolcatjs = require('lolcatjs');
 const path = require('path');
+const { exec } = require('child_process');
 
 lolcatjs.options.seed = Math.round(Math.random() * 1000);
 lolcatjs.options.colors = true;
@@ -30,8 +31,6 @@ const startupMessage = (bot) => {
     console.log(' ');
     console.log('[32m[1m 「🟢」 El bot ' + bot.username + ' se ha conectado correctamente! [0m');
 };
-
-
 
 // Manejador de comandos
 const commandHandler = async (msg, prefix) => {
@@ -80,24 +79,32 @@ const commandHandler = async (msg, prefix) => {
     }
 };
 
-
-
 // Función para manejar mensajes de Telegram
 const handleMessage = async (msg) => {
     if (msg.from.is_bot) return;
     commandHandler(msg, prefixInput);
 };
 
-const { exec } = require('child_process');
-
 const updateCode = async () => {
     try {
         console.log(`[32m Actualizando código...[0m`);
-        await exec('git pull origin main');
-        console.log(`[32m Código actualizado correctamente![0m`);
-        await exec('node index.js');
-        console.clear(); 
-        showMenu(); 
+        await exec('git pull origin main', (err, stdout, stderr) => {
+            if (err) {
+                console.error(`[31m Error al actualizar código: ${err}[0m`);
+                return;
+            }
+            console.log(`[32m Código actualizado correctamente![0m`);
+            console.log(stdout);
+            console.error(stderr);
+            exec('node index.js', (err, stdout, stderr) => {
+                if (err) {
+                    console.error(`[31m Error al reiniciar el bot: ${err}[0m`);
+                    return;
+                }
+                console.clear();
+                showMenu();
+            });
+        });
     } catch (error) {
         console.error(`[31m Error al actualizar código: ${error}[0m`);
     }
@@ -106,10 +113,17 @@ const updateCode = async () => {
 const installDependencies = async () => {
     try {
         console.log(`[32m Instalando dependencias...[0m`);
-        await exec('npm install node-telegram-bot-api');
-        console.log(`[32m Dependencias instaladas correctamente![0m`);
-        console.clear();
-        showMenu();
+        await exec('npm install node-telegram-bot-api', (err, stdout, stderr) => {
+            if (err) {
+                console.error(`[31m Error al instalar dependencias: ${err}[0m`);
+                return;
+            }
+            console.log(`[32m Dependencias instaladas correctamente![0m`);
+            console.log(stdout);
+            console.error(stderr);
+            console.clear();
+            showMenu();
+        });
     } catch (error) {
         console.error(`[31m Error al instalar dependencias: ${error}[0m`);
     }
@@ -129,10 +143,10 @@ const showMenu = () => {
         })
     );
 
-lolcatjs.fromString(' ');
+    lolcatjs.fromString(' ');
     lolcatjs.fromString('    Hecho por: Keiji821');
     lolcatjs.fromString(' ');
-    lolcatjs.fromString('⸂⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⸃');
+    lolcatjs.fromString('⸂⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⸃');
     lolcatjs.fromString('▏[1] Iniciar bot             ︳');
     lolcatjs.fromString('▏[2] Actualizar              ︳');
     lolcatjs.fromString('▏[3] Instalar dependencias   ︳');
@@ -171,11 +185,9 @@ rl.on('line', (option) => {
             break;
         case '2':
             updateCode();
-            showMenu();
             break;
         case '3':
             installDependencies();
-            showMenu();
             break;
         case '4':
             console.log('Saliendo...');
@@ -188,4 +200,14 @@ rl.on('line', (option) => {
     }
 }).on('close', () => {
     process.exit();
+});
+
+// Manejo de callback queries
+bot.on('callback_query', async (query) => {
+    const data = query.data.split('|');
+    const command = data[0];
+    const handler = commandHandlers[command];
+    if (handler) {
+        await handler.handleCallbackQuery(query, bot);
+    }
 });
