@@ -84,21 +84,27 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
 };
 
 function generateCards(year, month, bin, ccv) {
-  // Usar namso para generar las tarjetas
-  return namso.gen({
-    ShowCCV: true,
-    CCV: ccv === 'rnd' ? 'rnd' : ccv, // Generar CCV aleatorio si se especifica 'rnd'
-    ShowExpDate: true,
-    ShowBank: false,
-    Month: month,
-    Year: year,
-    Quantity: '10',
-    Bin: bin,
-    Format: 'PIPE'
-  })
-  .split('\n')  // Dividimos las tarjetas generadas por líneas
-  .map(card => card.trim())
-  .filter(card => card.length > 0); // Filtrar tarjetas vacías
+  // Generar tarjetas aleatoriamente con valores de CCV distintos si se especifica 'rnd'
+  const cards = [];
+
+  for (let i = 0; i < 10; i++) {
+    let cardCCV = ccv === 'rnd' ? getRandomCCV() : ccv; // CCV aleatorio por tarjeta
+    let cardNumber = namso.gen({
+      ShowCCV: true,
+      CCV: cardCCV,
+      ShowExpDate: true,
+      ShowBank: false,
+      Month: month,
+      Year: year,
+      Quantity: '1',
+      Bin: bin,
+      Format: 'PIPE'
+    }).trim();
+
+    cards.push(`${cardNumber}|${month}|${year}|${cardCCV}`);
+  }
+
+  return cards;
 }
 
 function getRandomMonth() {
