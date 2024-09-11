@@ -17,6 +17,7 @@ module.exports = {
     let year = parts[2];
     let ccv = parts[3];
 
+    // Generamos valores aleatorios si el usuario especifica 'rnd'
     month = month === 'rnd' ? getRandomMonth() : month;
     year = year === 'rnd' ? getRandomYear() : year;
     ccv = ccv === 'rnd' ? getRandomCCV() : ccv;
@@ -54,7 +55,7 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
       const opts = {
         reply_markup: {
           inline_keyboard: [
-            [{ text: 'Regenerar Tarjetas', callback_data: `regenerate|${bin}|${month}|${year}|${ccv}` }]
+            [{ text: 'Regenerar Tarjetas', callback_data: `regenerate|${bin}|rnd|rnd|rnd` }] // Forzamos a valores aleatorios en la regeneración
           ]
         }
       };
@@ -76,7 +77,16 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
       const month = data[2];
       const year = data[3];
       const ccv = data[4];
-      this.execute(query.message, [bin, month, year, ccv], bot);
+      
+      // Forzamos a usar valores aleatorios en la regeneración si se especifica 'rnd'
+      const args = [
+        bin,
+        month === 'rnd' ? getRandomMonth() : month,
+        year === 'rnd' ? getRandomYear() : year,
+        ccv === 'rnd' ? getRandomCCV() : ccv
+      ];
+      
+      this.execute(query.message, args, bot);
     }
   }
 };
