@@ -37,54 +37,64 @@ const startupMessage = (bot) => {
 // Manejador de comandos
 const commandHandler = async (msg, prefix, bot) => {
     try {
+        // Verificar si el mensaje comienza con el prefijo
         if (!msg.text.startsWith(prefix)) return;
-        const args = msg.text.slice(prefix.length).trim().split(/ +/);
-        const commandName = args.shift().toLowerCase();
+
+        const args = msg.text.slice(prefix.length).trim().split(/ +/);  // Separar los argumentos
+        const commandName = args.shift().toLowerCase();  // Obtener el nombre del comando
         let commandFile = null;
 
-        const mainFolder = path.resolve(__dirname, 'comandos');  // Usa una ruta absoluta
+        const mainFolder = path.resolve(__dirname, 'comandos');  // Usar ruta absoluta para la carpeta comandos
 
-        // Función recursiva para buscar en todas las subcarpetas
+        // Función recursiva para buscar archivos en subcarpetas
         const searchCommandFile = (folderPath, commandName) => {
-            const files = fs.readdirSync(folderPath);  // Lee los archivos en la carpeta
+            const files = fs.readdirSync(folderPath);  // Leer archivos de la carpeta
 
             for (const file of files) {
                 const filePath = path.join(folderPath, file);
-                const stat = fs.statSync(filePath);  // Obtiene el estado del archivo
+                const stat = fs.statSync(filePath);  // Obtener información del archivo
 
                 if (stat.isDirectory()) {
-                    // Si es una carpeta, busca recursivamente en la subcarpeta
+                    // Si es un directorio, buscar recursivamente
                     searchCommandFile(filePath, commandName);
                 } else if (file === `${commandName}.js`) {
-                    // Si es el archivo de comando correcto, asigna la ruta
+                    // Si el archivo coincide con el comando, guardar la ruta
                     commandFile = filePath;
                     return;
                 }
             }
         };
 
-        // Inicia la búsqueda en la carpeta principal
+        // Iniciar la búsqueda en la carpeta principal
         searchCommandFile(mainFolder, commandName);
 
+        // Si no se encuentra el archivo del comando
         if (!commandFile) {
             console.log(`[31m Comando no encontrado: ${commandName}`);
             return;
         }
 
-        // Carga el archivo de comando
+        // Cargar el archivo del comando
         const command = require(commandFile);
         if (!command.execute) {
             console.log(`[31m El comando ${commandName} no tiene una función execute`);
             return;
         }
 
-        // Ejecuta el comando
+        // Verificar que el bot esté definido antes de ejecutar el comando
+        if (!bot) {
+            console.error("El bot no está definido.");
+            return;
+        }
+
+        // Ejecutar el comando
         await command.execute(msg, args, bot);
 
     } catch (error) {
         console.error(`[31m Error al ejecutar comando: ${error}`);
+        // Verificar si el bot está disponible para enviar un mensaje de error
         if (bot) {
-            bot.sendMessage(msg.chat.id, `Error al ejecutar comando: ${error}`);
+            bot.sendMessage(msg.chat.id, `Error al ejecutar comando: ${error.message}`);
         } else {
             console.error("El bot no está definido.");
         }
