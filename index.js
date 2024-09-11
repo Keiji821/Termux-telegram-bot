@@ -68,35 +68,17 @@ const filePath = path.join(filePath, file);
 console.log(`Verificando: ${filePath}`);
 if (file === `${commandName}.js`) {
 commandFile = filePath;
-break;
+return; // Reemplazar break con return
 }
 }
 });
 } else if (file === `${commandName}.js`) {
 commandFile = filePath;
-break;
+return; // Reemplazar break con return
 }
 });
 }
 });
-
-if (!commandFile) {
-console.log(`[31m Comando no encontrado: ${commandName}[0m`);
-return;
-}
-
-const command = require(commandFile);
-if (!command.execute) {
-console.log(`[31m El comando ${commandName} no tiene una función execute[0m`);
-return;
-}
-
-await command.execute(msg, args, bot);
-} catch (error) {
-console.error(`[31m Error al ejecutar comando: ${error}[0m`);
-bot.sendMessage(msg.chat.id, `Error al ejecutar comando: ${error}`);
-}
-};
 
 
 
