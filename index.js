@@ -35,65 +35,55 @@ const startupMessage = (bot) => {
 
 // Manejador de comandos
 const commandHandler = async (msg, prefix, bot) => {
-try {
-if (!msg.text.startsWith(prefix)) return;
-const args = msg.text.slice(prefix.length).trim().split(/ +/);
-const commandName = args.shift().toLowerCase();
-let commandFile = null;
+    try {
+        if (!msg.text.startsWith(prefix)) return;
+        const args = msg.text.slice(prefix.length).trim().split(/ +/);
+        const commandName = args.shift().toLowerCase();
+        let commandFile = null;
 
-const mainFolder = './comandos';
+        const mainFolder = './comandos';
 
-fs.readdir(mainFolder, (err, files) => {
-if (err) {
-console.error(err);
-return;
-}
-for (const file of files) {
-const filePath = path.join(mainFolder, file);
-console.log(`Verificando: ${filePath}`);
-fs.stat(filePath, (err, stat) => {
-if (err) {
-console.error(err);
-return;
-}
-if (stat.isDirectory()) {
-// Recursivamente buscar en subcarpetas
-fs.readdir(filePath, (err, files) => {
-if (err) {
-console.error(err);
-return;
-}
-for (const file of files) {
-const newFilePath = path.join(filePath, file);
-console.log(`Verificando: ${newFilePath}`);
-if (file === `${commandName}.js`) {
-commandFile = newFilePath;
-}
-}
-});
-} else if (file === `${commandName}.js`) {
-commandFile = filePath;
-}
-});
-}
-});
+        // Función recursiva para buscar en todas las subcarpetas
+        const searchCommandFile = (folderPath, commandName) => {
+            const files = fs.readdirSync(folderPath);  // Lee los archivos en la carpeta
 
-if (!commandFile) {
-console.log(`[31m Comando no encontrado: ${commandName}`);
-return;
-}
+            for (const file of files) {
+                const filePath = path.join(folderPath, file);
+                const stat = fs.statSync(filePath);  // Obtiene el estado del archivo
 
-const command = require(commandFile);
-if (!command.execute) {
-console.log(`[31m El comando ${commandName} no tiene una función execute`);
-return;
-}
+                if (stat.isDirectory()) {
+                    // Si es una carpeta, busca recursivamente en la subcarpeta
+                    searchCommandFile(filePath, commandName);
+                } else if (file === `${commandName}.js`) {
+                    // Si es el archivo de comando correcto, asigna la ruta
+                    commandFile = filePath;
+                    return;
+                }
+            }
+        };
 
-await command.execute(msg, args, bot);
-} catch (error) {
-console.error(`[31m Error al ejecutar comando: ${error}`);
-bot.sendMessage(msg.chat.id, `Error al ejecutar comando: ${error}`);
-}
+        // Inicia la búsqueda en la carpeta principal
+        searchCommandFile(mainFolder, commandName);
+
+        if (!commandFile) {
+            console.log(`[31m Comando no encontrado: ${commandName}`);
+            return;
+        }
+
+        // Carga el archivo de comando
+        const command = require(commandFile);
+        if (!command.execute) {
+            console.log(`[31m El comando ${commandName} no tiene una función execute`);
+            return;
+        }
+
+        // Ejecuta el comando
+        await command.execute(msg, args, bot);
+
+    } catch (error) {
+        console.error(`[31m Error al ejecutar comando: ${error}`);
+        bot.sendMessage(msg.chat.id, `Error al ejecutar comando: ${error}`);
+    }
 };
 
 
