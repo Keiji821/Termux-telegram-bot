@@ -66,14 +66,14 @@ const commandHandler = async (msg, prefix, bot) => {
         searchCommandFile(mainFolder, commandName);
 
         if (!commandFile) {
-            console.log(`[31m Comando no encontrado: ${commandName}`);
+            console.log(`[31m Comando no encontrado: ${commandName}`);
             return;
         }
 
         // Carga el archivo de comando
         const command = require(commandFile);
         if (!command.execute) {
-            console.log(`[31m El comando ${commandName} no tiene una función execute`);
+            console.log(`[31m El comando ${commandName} no tiene una función execute`);
             return;
         }
 
@@ -81,8 +81,12 @@ const commandHandler = async (msg, prefix, bot) => {
         await command.execute(msg, args, bot);
 
     } catch (error) {
-        console.error(`[31m Error al ejecutar comando: ${error}`);
-        bot.sendMessage(msg.chat.id, `Error al ejecutar comando: ${error}`);
+        console.error(`[31m Error al ejecutar comando: ${error}`);
+        if (bot) {
+            bot.sendMessage(msg.chat.id, `Error al ejecutar comando: ${error}`);
+        } else {
+            console.error("El bot no está definido.");
+        }
     }
 };
 
