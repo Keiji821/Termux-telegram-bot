@@ -73,12 +73,15 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
 
     if (command === 'regenerate') {
       const bin = data[1];
-      const month = data[2] === 'rnd' ? getRandomMonth() : data[2];
-      const year = data[3] === 'rnd' ? getRandomYear() : data[3];
-      const ccv = data[4] === 'rnd' ? 'rnd' : data[4];  // Mantener "rnd" para CCV aleatorio
+      const month = getRandomMonth(); // Regenerar aleatoriamente
+      const year = getRandomYear();   // Regenerar aleatoriamente
+      const ccv = getRandomCCV();     // Regenerar aleatoriamente
 
-      // Llamamos de nuevo a execute para regenerar las tarjetas
-      this.execute(query.message, [bin, month, year, ccv], bot);
+      // Llamar de nuevo a execute para regenerar las tarjetas
+      await this.execute(query.message, [bin, month, year, ccv], bot);
+
+      // Confirmar que el botón ha sido presionado
+      await bot.answerCallbackQuery(query.id, { text: 'Tarjetas regeneradas!' });
     }
   }
 };
