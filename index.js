@@ -64,10 +64,10 @@ console.error(err);
 return;
 }
 for (const file of files) {
-const filePath = path.join(filePath, file);
-console.log(`Verificando: ${filePath}`);
+const newFilePath = path.join(filePath, file);
+console.log(`Verificando: ${newFilePath}`);
 if (file === `${commandName}.js`) {
-commandFile = filePath;
+commandFile = newFilePath;
 }
 }
 });
