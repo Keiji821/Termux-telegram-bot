@@ -8,7 +8,6 @@ module.exports = {
     const input = args.join(' ');
     const parts = input.split('|');
 
-    // Verifica que el formato de entrada sea correcto
     if (parts.length !== 4) {
       return bot.sendMessage(msg.chat.id, 'Error: Formato de entrada incorrecto. Uso: /gen <bin>|<mes>|<año>|<ccv>');
     }
@@ -18,12 +17,10 @@ module.exports = {
     let year = parts[2];
     let ccv = parts[3];
 
-    // Validar valores aleatorios si es necesario
     month = month === 'rnd' ? getRandomMonth() : month;
     year = year === 'rnd' ? getRandomYear() : year;
     ccv = ccv === 'rnd' ? getRandomCCV() : ccv;
 
-    // Verificación de BIN usando la API
     try {
       const response = await axios.get(`https://binchk-api.vercel.app/bin=${bin}`);
       const json = response.data;
@@ -32,37 +29,27 @@ module.exports = {
         return bot.sendMessage(msg.chat.id, 'Error: BIN no encontrado o inválido.');
       }
 
-      // Datos del BIN
       const bank = json.bank || 'Desconocido';
       const brand = json.brand || 'Desconocido';
       const type = json.type || 'Desconocido';
       const level = json.level || 'Desconocido';
-      const phone = json.phone || 'Desconocido';
-      const countryCode = json.code || ''; // Código de país
-      const countryEmoji = json.flag || ''; // Emoji de bandera ya devuelto por la API
+      const countryEmoji = json.flag || '';
       const countryName = json.country || 'Desconocido';
 
-      // Generar las tarjetas de crédito
       const cards = generateCards(year, month, bin);
 
-      // Crear mensaje con la información generada
       const message = `
-\`\`\`
-Card Generator
+**Card Generator**
 Format: ${bin}|${month}|${year}|${ccv}
-\`\`\`
 
-${cards.map(card => `\`${card}\``).join('\n')}
+${cards.map(card => `**${card}**`).join('\n')}
 
-\`\`\`
-Generated Cards
-\`\`\`
+**Generated Cards**
 
 **Bin Data:** ${brand} - ${type} - ${level}
 **Bank Data:** [${bank} - ${countryEmoji} - ${countryName}]
       `;
 
-      // Opciones para el botón de regenerar
       const opts = {
         reply_markup: {
           inline_keyboard: [
@@ -72,7 +59,6 @@ Generated Cards
         parse_mode: 'Markdown'
       };
 
-      // Enviar el mensaje con las tarjetas generadas y el botón en el mismo mensaje
       await bot.sendMessage(msg.chat.id, message, opts);
 
     } catch (error) {
@@ -81,7 +67,6 @@ Generated Cards
     }
   },
 
-  // Manejar la interacción del botón de regenerar
   async handleCallbackQuery(query, bot) {
     const data = query.data.split('|');
     const command = data[0];
@@ -96,7 +81,6 @@ Generated Cards
   }
 };
 
-// Función para generar las tarjetas
 function generateCards(year, month, bin) {
   const res = namso.gen({
     ShowCCV: true,
@@ -109,12 +93,10 @@ function generateCards(year, month, bin) {
     Format: "PIPE"
   });
 
-  // Asegurarse de que las tarjetas se generen correctamente
   const cards = res.split("|").filter(card => card && card.length >= 16);
   return cards.map(card => `${card}|${month}|${year}|${getRandomCCV()}`);
 }
 
-// Funciones auxiliares para generar valores aleatorios
 function getRandomMonth() {
   const month = Math.floor(Math.random() * 12) + 1;
   return month.toString().padStart(2, '0');
