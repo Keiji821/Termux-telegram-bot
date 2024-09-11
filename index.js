@@ -128,6 +128,7 @@ const showMenu = () => {
         })
     );
 
+lolcatjs.fromString(' ');
     lolcatjs.fromString('    Hecho por: Keiji821');
     lolcatjs.fromString(' ');
     lolcatjs.fromString('⸂⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⸃');
