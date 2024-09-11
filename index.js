@@ -29,7 +29,7 @@ const colors = {
 // Mostrar mensaje de inicio
 const startupMessage = (bot) => {
     console.log(' ');
-    console.log('[32m 「🟢」 El bot ' + bot.username + ' se ha conectado correctamente! [0m');
+    console.log('[32m 「🟢」 El bot ' + bot.username + ' se ha conectado correctamente!');
 };
 
 
