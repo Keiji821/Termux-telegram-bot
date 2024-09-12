@@ -30,14 +30,19 @@ module.exports = {
       }
 
       const bank = json.bank || 'Desconocido';
-      const brand = json.brand || 'Desconocido';
+      const brand = json.brand || 'Desconocido'; // Visa, Mastercard, Amex, etc.
       const type = json.type || 'Desconocido';
       const level = json.level || 'Desconocido';
       const countryEmoji = json.flag || '';
       const countryName = json.country || 'Desconocido';
 
+      // Validar que el BIN es compatible con el generador (Visa, Mastercard o Amex)
+      if (brand !== 'Visa' && brand !== 'Mastercard' && brand !== 'American Express') {
+        return bot.sendMessage(msg.chat.id, 'Error: Solo se soporta la generación de tarjetas Visa, Mastercard o American Express.');
+      }
+
       // Generar las tarjetas con valores aleatorios para CCV si es 'rnd' o 'xxx'
-      const cards = generateCards(year, month, bin, ccv);
+      const cards = generateCards(year, month, bin, ccv, brand); // Se pasa la marca
 
       const message = `
 Formato: ${bin}|${month}|${year}|${ccv}
@@ -90,9 +95,17 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
   }
 };
 
-function generateCards(year, month, bin, ccv) {
+function generateCards(year, month, bin, ccv, brand) {
   // Generar tarjetas aleatoriamente con valores de CCV distintos si se especifica 'rnd'
   const cards = [];
+  let cardLength = 16; // Longitud estándar
+
+  // Ajustar longitud de la tarjeta dependiendo de la marca
+  if (brand === 'American Express') {
+    cardLength = 15;
+  } else if (brand === 'Visa' || brand === 'Mastercard') {
+    cardLength = 16;
+  }
 
   for (let i = 0; i < 10; i++) {
     let cardCCV = ccv === 'rnd' ? getRandomCCV() : ccv; // CCV aleatorio por tarjeta
@@ -106,9 +119,15 @@ function generateCards(year, month, bin, ccv) {
       Quantity: '1',
       Bin: bin,
       Format: 'PIPE'
-    }).trim().split('|')[0];  // Corregir para que no se repitan los datos
+    }).trim().split('|')[0];
 
-    cards.push(`${cardNumber}|${month}|${year}|${cardCCV}`);
+    // Validar que la tarjeta generada tiene la longitud correcta
+    if (cardNumber.length === cardLength) {
+      cards.push(`${cardNumber}|${month}|${year}|${cardCCV}`);
+    } else {
+      console.error(`Error: No se pudo generar un número de tarjeta válido para ${brand}.`);
+      cards.push('Error: No se pudo generar un número válido.');
+    }
   }
 
   return cards;
