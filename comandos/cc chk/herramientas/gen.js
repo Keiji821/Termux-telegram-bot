@@ -13,10 +13,7 @@ module.exports = {
       return bot.sendMessage(msg.chat.id, 'Error: Formato de entrada incorrecto. Uso: /gen <bin>|<mes>|<año>|<ccv>');
     }
 
-    let bin = parts[0];
-    let month = parts[1];
-    let year = parts[2];
-    let ccv = parts[3];
+    let [bin, month, year, ccv] = parts;
 
     month = month === 'rnd' || month === 'xxx' ? getRandomMonth() : month;
     year = year === 'rnd' || year === 'xxx' ? getRandomYear() : year;
@@ -140,11 +137,7 @@ function generateBin(bin) {
 }
 
 function generateRandomDigits(length) {
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += Math.floor(Math.random() * 10);
-  }
-  return result;
+  return Array.from({ length }, () => Math.floor(Math.random() * 10)).join('');
 }
 
 function calculateLuhnDigit(number) {
@@ -162,21 +155,18 @@ function calculateLuhnDigit(number) {
     shouldDouble = !shouldDouble;
   }
 
-  const checkDigit = (10 - (sum % 10)) % 10;
-  return checkDigit.toString();
+  return ((10 - (sum % 10)) % 10).toString();
 }
 
 function getRandomMonth() {
-  const month = Math.floor(Math.random() * 12) + 1;
-  return month.toString().padStart(2, '0');
+  return String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
 }
 
 function getRandomYear() {
   const currentYear = new Date().getFullYear();
-  const year = currentYear + Math.floor(Math.random() * 5);
-  return year.toString().slice(2);
+  return String(currentYear + Math.floor(Math.random() * 5)).slice(2);
 }
 
 function getRandomCCV() {
-  return Math.floor(100 + Math.random() * 900).toString();
+  return String(Math.floor(Math.random() * 900) + 100);
 }
