@@ -58,7 +58,7 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
       const opts = {
         reply_markup: {
           inline_keyboard: [
-            [{ text: 'Regenerar Tarjetas', callback_data: `regenerate|${bin}` }]
+            [{ text: 'Regenerar Tarjetas', callback_data: `regenerate|${bin}|${month}|${year}` }]
           ]
         }
       };
@@ -77,8 +77,8 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
 
     if (command === 'regenerate') {
       const bin = data[1];
-      const month = getRandomMonth();
-      const year = getRandomYear();
+      const month = data[2];
+      const year = data[3];
 
       await this.execute(query.message, [bin, month, year, 'rnd'], bot);
 
@@ -123,11 +123,16 @@ function generateCardNumber(bin, length) {
     throw new Error("El BIN debe ser numérico.");
   }
 
-  const randomDigits = generateRandomDigits(length - bin.length - 1);
+  const requiredLength = length - 1; // -1 porque vamos a añadir el dígito de Luhn al final
+  if (bin.length > requiredLength) {
+    throw new Error(`El BIN no puede tener más de ${requiredLength} dígitos.`);
+  }
+
+  const randomDigits = generateRandomDigits(requiredLength - bin.length);
   const number = bin + randomDigits;
 
-  if (number.length !== length - 1) {
-    throw new Error(`Error al generar el número de tarjeta: la longitud debe ser ${length - 1}`);
+  if (number.length !== requiredLength) {
+    throw new Error(`Error al generar el número de tarjeta: la longitud debe ser ${requiredLength}`);
   }
 
   return number + calculateLuhnDigit(number);
@@ -144,7 +149,7 @@ function generateRandomDigits(length) {
 function calculateLuhnDigit(number) {
   const digits = number.split('').map(d => parseInt(d, 10));
   let sum = 0;
-  let shouldDouble = true;
+  let shouldDouble = false; // Comenzar desde la derecha para el algoritmo de Luhn
 
   for (let i = digits.length - 1; i >= 0; i--) {
     let digit = digits[i];
@@ -156,7 +161,8 @@ function calculateLuhnDigit(number) {
     shouldDouble = !shouldDouble;
   }
 
-  return ((10 - (sum % 10)) % 10).toString();
+  const remainder = sum % 10;
+  return remainder === 0 ? '0' : (10 - remainder).toString();
 }
 
 function getRandomMonth() {
