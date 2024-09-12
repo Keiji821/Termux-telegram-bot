@@ -8,7 +8,7 @@ module.exports = {
     const parts = input.split('|');
 
     if (parts.length !== 4) {
-      return bot.sendMessage(msg.chat.id, 'Error: Formato de entrada incorrecto. Uso: /gen <bin>|<mes>|<año>|<ccv>');
+      return bot.sendMessage(msg.chat.id, 'Error: Formato de entrada incorrecto. Uso: .gen <bin>|<mes>|<año>|<ccv>');
     }
 
     let [bin, month, year, ccv] = parts;
