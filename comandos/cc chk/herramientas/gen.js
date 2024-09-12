@@ -5,23 +5,23 @@ module.exports = {
   name: 'gen',
   description: 'Genera tarjetas de crédito aleatorias',
   async execute(msg, args, bot) {
-    const input = args.join(' ');
-    const parts = input.split('|');
-
-    if (parts.length !== 4) {
-      return bot.sendMessage(msg.chat.id, 'Error: Formato de entrada incorrecto. Uso: /gen <bin>|<mes>|<año>|<ccv>');
-    }
-
-    let bin = parts[0];
-    let month = parts[1];
-    let year = parts[2];
-    let ccv = parts[3];
-
-    // Generar aleatoriamente si se especifica 'rnd' o 'xxx'
-    month = month === 'rnd' || month === 'xxx' ? getRandomMonth() : month;
-    year = year === 'rnd' || year === 'xxx' ? getRandomYear() : year;
-
     try {
+      const input = args.join(' ');
+      const parts = input.split('|');
+
+      if (parts.length !== 4) {
+        return bot.sendMessage(msg.chat.id, 'Error: Formato de entrada incorrecto. Uso: /gen <bin>|<mes>|<año>|<ccv>');
+      }
+
+      let bin = parts[0];
+      let month = parts[1];
+      let year = parts[2];
+      let ccv = parts[3];
+
+      // Generar aleatoriamente si se especifica 'rnd' o 'xxx'
+      month = month === 'rnd' || month === 'xxx' ? getRandomMonth() : month;
+      year = year === 'rnd' || year === 'xxx' ? getRandomYear() : year;
+
       const response = await axios.get(`https://binchk-api.vercel.app/bin=${bin}`);
       const json = response.data;
 
@@ -61,26 +61,31 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
       await bot.sendMessage(msg.chat.id, message, opts);
 
     } catch (error) {
-      console.error('Error al obtener datos de la API:', error.message);
-      return bot.sendMessage(msg.chat.id, 'Error al generar tarjetas de crédito. Intente nuevamente más tarde.');
+      console.error('Error en el comando /gen:', error.message);
+      bot.sendMessage(msg.chat.id, 'Hubo un error al generar las tarjetas. Inténtalo de nuevo.');
     }
   },
 
   async handleCallbackQuery(query, bot) {
-    const data = query.data.split('|');
-    const command = data[0];
+    try {
+      const data = query.data.split('|');
+      const command = data[0];
 
-    if (command === 'regenerate') {
-      const bin = data[1];
-      const month = getRandomMonth(); // Regenerar aleatoriamente
-      const year = getRandomYear();   // Regenerar aleatoriamente
-      const ccv = getRandomCCV();     // Regenerar aleatoriamente
+      if (command === 'regenerate') {
+        const bin = data[1];
+        const month = getRandomMonth(); // Regenerar aleatoriamente
+        const year = getRandomYear();   // Regenerar aleatoriamente
+        const ccv = getRandomCCV();     // Regenerar aleatoriamente
 
-      // Enviar un nuevo mensaje con las tarjetas regeneradas
-      await this.execute(query.message, [bin, month, year, ccv], bot);
+        // Enviar un nuevo mensaje con las tarjetas regeneradas
+        await this.execute(query.message, [bin, month, year, ccv], bot);
 
-      // Confirmar que el botón ha sido presionado
-      await bot.answerCallbackQuery(query.id, { text: 'Tarjetas regeneradas!' });
+        // Confirmar que el botón ha sido presionado
+        await bot.answerCallbackQuery(query.id, { text: 'Tarjetas regeneradas!' });
+      }
+    } catch (error) {
+      console.error('Error en handleCallbackQuery:', error.message);
+      bot.answerCallbackQuery(query.id, { text: 'Error al procesar la solicitud.' });
     }
   }
 };
