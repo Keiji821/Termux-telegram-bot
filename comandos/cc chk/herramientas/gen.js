@@ -19,8 +19,20 @@ module.exports = {
     year = year || getRandomYear();
     ccv = ccv || getRandomCCV();
 
-    if (bin.length < 6) {
-      return bot.sendMessage(msg.chat.id, 'Error: El BIN debe tener al menos 6 dígitos.');
+    if (bin.length < 6 || isNaN(bin)) {
+      return bot.sendMessage(msg.chat.id, 'Error: El BIN debe tener al menos 6 dígitos numéricos.');
+    }
+
+    if (!/^\d{2}$/.test(month) || parseInt(month) < 1 || parseInt(month) > 12) {
+      return bot.sendMessage(msg.chat.id, 'Error: El mes debe ser un número entre 01 y 12.');
+    }
+
+    if (!/^\d{2}$/.test(year) || parseInt(year) < 0) {
+      return bot.sendMessage(msg.chat.id, 'Error: El año debe ser un número válido.');
+    }
+
+    if (!/^\d{3}$/.test(ccv)) {
+      return bot.sendMessage(msg.chat.id, 'Error: El CCV debe ser un número de 3 dígitos.');
     }
 
     console.log('BIN:', bin, 'Mes:', month, 'Año:', year, 'CCV:', ccv);
