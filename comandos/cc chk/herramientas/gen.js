@@ -1,7 +1,5 @@
 const axios = require('axios');
 
-const cardTypes = ["visa", "mastercard", "americanexpress", "discover"];
-
 module.exports = {
   name: 'gen',
   description: 'Genera tarjetas de crédito aleatorias',
@@ -22,8 +20,11 @@ module.exports = {
     bin = generateBin(bin);
 
     try {
+      console.log(`Fetching data for BIN: ${bin}`);
       const response = await axios.get(`https://binchk-api.vercel.app/bin=${bin}`);
       const json = response.data;
+
+      console.log('API Response:', json);
 
       if (!json.status) {
         return bot.sendMessage(msg.chat.id, 'Error: BIN no encontrado o inválido.');
