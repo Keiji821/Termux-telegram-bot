@@ -1,37 +1,34 @@
-const NamsoCCGen = require('namso-cc-gen');
+const CardGen = require('@simeon979/card-gen');
 
 module.exports = {
   name: 'gen',
   description: 'Genera tarjetas de crédito aleatorias',
   async execute(msg, args, bot) {
     const input = args.join(' ');
-    console.log('Input recibido:', input); // Depuración: Imprimir entrada
+    console.log('Input recibido:', input);
 
     const parts = input.split('|');
 
-    // Validar que al menos se proporcione el BIN
     if (parts.length < 1) {
       return bot.sendMessage(msg.chat.id, 'Error: Se requiere al menos el BIN. Uso: .gen <bin>|<mes>|<año>|<ccv>');
     }
 
     let [bin, month, year, ccv] = parts;
 
-    // Completar datos si no se proporcionan
     month = month || getRandomMonth();
     year = year || getRandomYear();
     ccv = ccv || getRandomCCV();
 
-    // Validar longitud del BIN
     if (bin.length < 6) {
       return bot.sendMessage(msg.chat.id, 'Error: El BIN debe tener al menos 6 dígitos.');
     }
 
-    console.log('BIN:', bin, 'Mes:', month, 'Año:', year, 'CCV:', ccv); // Depuración: Imprimir parámetros
+    console.log('BIN:', bin, 'Mes:', month, 'Año:', year, 'CCV:', ccv);
 
     try {
-      const cardGen = new NamsoCCGen();
-      const cardDetails = cardGen.getDetails(bin);
-      console.log('Detalles del BIN:', cardDetails); // Depuración: Imprimir detalles del BIN
+      const cardGen = new CardGen();
+      const cardDetails = cardGen.getCardDetails(bin);
+      console.log('Detalles del BIN:', cardDetails);
 
       if (!cardDetails) {
         return bot.sendMessage(msg.chat.id, 'Error: BIN no encontrado o inválido.');
@@ -50,7 +47,7 @@ module.exports = {
 
       const cards = [];
       for (let i = 0; i < 10; i++) {
-        const cardNumber = cardGen.generate(bin).number;
+        const cardNumber = cardGen.generateCard(bin).number; // Ajusta el método según la documentación del paquete.
         cards.push(`${cardNumber}|${month}|${year}|${ccv}`);
       }
 
