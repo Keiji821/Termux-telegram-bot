@@ -22,6 +22,8 @@ module.exports = {
     year = year === 'rnd' || year === 'xxx' ? getRandomYear() : year;
     ccv = ccv === 'rnd' || ccv === 'xxx' ? getRandomCCV() : ccv;
 
+    bin = generateBin(bin);
+
     try {
       const response = await axios.get(`https://binchk-api.vercel.app/bin=${bin}`);
       const json = response.data;
@@ -131,6 +133,10 @@ function generateCardNumber(bin, length) {
   }
 
   return number + calculateLuhnDigit(number);
+}
+
+function generateBin(bin) {
+  return bin.replace(/x/g, () => Math.floor(Math.random() * 10).toString());
 }
 
 function generateRandomDigits(length) {
