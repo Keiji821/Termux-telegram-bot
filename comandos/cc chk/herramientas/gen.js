@@ -45,10 +45,10 @@ module.exports = {
       const countryName = json.country || 'Desconocido';
 
       // Generar las tarjetas con el algoritmo de Luhn
-      const cards = generateCards(bin, month, year, ccv, brand);
+      const cards = generateCards(bin, month, year, brand);
 
       const message = `
-Formato: ${bin}|${month}|${year}|${ccv}
+Formato: ${bin}|${month}|${year}|rnd
 
 Tarjetas generadas:
 
@@ -82,10 +82,9 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
       const bin = data[1];
       const month = getRandomMonth(); // Regenerar aleatoriamente
       const year = getRandomYear();   // Regenerar aleatoriamente
-      const ccv = getRandomCCV();     // Regenerar aleatoriamente
 
       // Enviar un nuevo mensaje con las tarjetas regeneradas
-      await this.execute(query.message, [bin, month, year, ccv], bot);
+      await this.execute(query.message, [bin, month, year, 'rnd'], bot);
 
       // Confirmar que el botón ha sido presionado
       await bot.answerCallbackQuery(query.id, { text: 'Tarjetas regeneradas!' });
@@ -100,12 +99,13 @@ function isSupportedBrand(brand) {
 }
 
 // Generar tarjetas usando el algoritmo de Luhn
-function generateCards(bin, month, year, ccv, brand) {
+function generateCards(bin, month, year, brand) {
   const cards = [];
   const cardLength = getCardLength(brand);
 
   for (let i = 0; i < 10; i++) {
     const cardNumber = generateCardNumber(bin, cardLength);
+    const ccv = getRandomCCV(); // Generar un CCV diferente para cada tarjeta
     cards.push(`${cardNumber}|${month}|${year}|${ccv}`);
   }
 
