@@ -1,4 +1,4 @@
-const CardGen = require('@simeon979/card-gen');
+const cardGen = require('@simeon979/card-gen');
 
 module.exports = {
   name: 'gen',
@@ -26,28 +26,22 @@ module.exports = {
     console.log('BIN:', bin, 'Mes:', month, 'Año:', year, 'CCV:', ccv);
 
     try {
-      const cardGen = new CardGen();
-      const cardDetails = cardGen.getCardDetails(bin);
+      const cardDetails = cardGen.lookupCard(bin);
       console.log('Detalles del BIN:', cardDetails);
 
       if (!cardDetails) {
         return bot.sendMessage(msg.chat.id, 'Error: BIN no encontrado o inválido.');
       }
 
-      const brand = cardDetails.brand || 'Desconocido';
+      const brand = cardDetails.network || 'Desconocido';
       if (!isSupportedBrand(brand)) {
         return bot.sendMessage(msg.chat.id, 'Advertencia: El BIN ingresado puede no ser compatible con el generador.');
       }
 
-      const bank = cardDetails.bank || 'Desconocido';
-      const type = cardDetails.type || 'Desconocido';
-      const level = cardDetails.level || 'Desconocido';
-      const countryEmoji = cardDetails.flag || '';
-      const countryName = cardDetails.country || 'Desconocido';
-
+      const bank = cardDetails.issuer || 'Desconocido';
       const cards = [];
       for (let i = 0; i < 10; i++) {
-        const cardNumber = cardGen.generateCard(bin).number; // Ajusta el método según la documentación del paquete.
+        const cardNumber = cardGen.generateCard({ startsWith: bin }).number; // Ajusta el método según la documentación del paquete.
         cards.push(`${cardNumber}|${month}|${year}|${ccv}`);
       }
 
@@ -58,8 +52,8 @@ Tarjetas generadas:
 
 ${cards.join('\n')}
 
-Datos del BIN: ${brand} - ${type} - ${level}
-Banco: ${bank} - ${countryEmoji} - ${countryName}
+Datos del BIN: ${brand}
+Banco: ${bank}
       `;
 
       const opts = {
