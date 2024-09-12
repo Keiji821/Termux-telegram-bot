@@ -1,6 +1,7 @@
 const axios = require('axios');
 
-const cardTypes = ["americanexpress", "visa13", "visa16", "mastercard", "discover"];
+// Listado de tipos de tarjetas soportadas
+const cardTypes = ["visa", "mastercard", "americanexpress", "discover"];
 
 module.exports = {
   name: 'gen',
@@ -9,6 +10,7 @@ module.exports = {
     const input = args.join(' ');
     const parts = input.split('|');
 
+    // Validación del formato de entrada
     if (parts.length !== 4) {
       return bot.sendMessage(msg.chat.id, 'Error: Formato de entrada incorrecto. Uso: /gen <bin>|<mes>|<año>|<ccv>');
     }
@@ -24,6 +26,7 @@ module.exports = {
     ccv = ccv === 'rnd' || ccv === 'xxx' ? getRandomCCV() : ccv;
 
     try {
+      // Hacemos la solicitud a la API de verificación de BIN
       const response = await axios.get(`https://binchk-api.vercel.app/bin=${bin}`);
       const json = response.data;
 
@@ -33,7 +36,7 @@ module.exports = {
 
       const brand = json.brand || 'Desconocido';
 
-      // Validar si la marca es compatible
+      // Validamos si la marca es compatible
       if (!isSupportedBrand(brand)) {
         return bot.sendMessage(msg.chat.id, 'Advertencia: El BIN ingresado puede no ser compatible con el generador.');
       }
@@ -44,9 +47,10 @@ module.exports = {
       const countryEmoji = json.flag || '';
       const countryName = json.country || 'Desconocido';
 
-      // Generar las tarjetas con el algoritmo de Luhn
+      // Generamos 10 tarjetas usando el algoritmo de Luhn
       const cards = generateCards(bin, month, year, brand);
 
+      // Formato del mensaje con las tarjetas generadas y la información del BIN
       const message = `
 Formato: ${bin}|${month}|${year}|rnd
 
@@ -58,10 +62,11 @@ Bin Data: ${brand} - ${type} - ${level}
 Bank Data: ${bank} - ${countryEmoji} - ${countryName}
       `;
 
+      // Enviar el mensaje con botón de regeneración
       const opts = {
         reply_markup: {
           inline_keyboard: [
-            [{ text: 'Regenerar Tarjetas', callback_data: `regenerate|${bin}` }] // Forzar regeneración aleatoria
+            [{ text: 'Regenerar Tarjetas', callback_data: `regenerate|${bin}` }] // Botón para regenerar
           ]
         }
       };
@@ -74,6 +79,7 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
     }
   },
 
+  // Manejador del botón de regeneración
   async handleCallbackQuery(query, bot) {
     const data = query.data.split('|');
     const command = data[0];
@@ -83,10 +89,10 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
       const month = getRandomMonth(); // Regenerar aleatoriamente
       const year = getRandomYear();   // Regenerar aleatoriamente
 
-      // Enviar un nuevo mensaje con las tarjetas regeneradas
+      // Regenerar el mensaje con las nuevas tarjetas
       await this.execute(query.message, [bin, month, year, 'rnd'], bot);
 
-      // Confirmar que el botón ha sido presionado
+      // Confirmar que el botón fue presionado
       await bot.answerCallbackQuery(query.id, { text: 'Tarjetas regeneradas!' });
     }
   }
@@ -118,9 +124,7 @@ function getCardLength(brand) {
     case 'american express':
       return 15;
     case 'visa':
-      return 16;
     case 'mastercard':
-      return 16;
     case 'discover':
       return 16;
     default:
