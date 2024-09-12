@@ -36,9 +36,10 @@ module.exports = {
       const countryEmoji = json.flag || '';
       const countryName = json.country || 'Desconocido';
 
-      // Validar que el BIN es compatible con el generador (Visa, Mastercard o Amex)
-      if (brand !== 'Visa' && brand !== 'Mastercard' && brand !== 'American Express') {
-        return bot.sendMessage(msg.chat.id, 'Error: Solo se soporta la generación de tarjetas Visa, Mastercard o American Express.');
+      // Validar el tipo de tarjeta pero no bloquear BINs desconocidos
+      const supportedBrands = ['Visa', 'Mastercard', 'American Express'];
+      if (!supportedBrands.includes(brand)) {
+        return bot.sendMessage(msg.chat.id, 'Advertencia: El BIN ingresado puede no ser compatible con el generador.');
       }
 
       // Generar las tarjetas con valores aleatorios para CCV si es 'rnd' o 'xxx'
@@ -58,7 +59,7 @@ Bank Data: ${bank} - ${countryEmoji} - ${countryName}
       const opts = {
         reply_markup: {
           inline_keyboard: [
-            [{ text: 'Regenerar Tarjetas', callback_data: `regenerate|${bin}` }] // Forzar regeneración aleatoria
+            [{ text: 'Regenerar Tarjetas', callback_data: `regenerate|${bin}|${month}|${year}|${ccv}` }] // Forzar regeneración aleatoria
           ]
         }
       };
@@ -103,8 +104,6 @@ function generateCards(year, month, bin, ccv, brand) {
   // Ajustar longitud de la tarjeta dependiendo de la marca
   if (brand === 'American Express') {
     cardLength = 15;
-  } else if (brand === 'Visa' || brand === 'Mastercard') {
-    cardLength = 16;
   }
 
   for (let i = 0; i < 10; i++) {
