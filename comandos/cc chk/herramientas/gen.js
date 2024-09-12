@@ -13,9 +13,9 @@ module.exports = {
 
     let [bin, month, year, ccv] = parts;
 
-    month = month === 'rnd' || month === 'xxx' ? getRandomMonth() : month;
-    year = year === 'rnd' || year === 'xxx' ? getRandomYear() : year;
-    ccv = ccv === 'rnd' || ccv === 'xxx' ? getRandomCCV() : ccv;
+    month = (month === 'rnd' || month === 'xxx') ? getRandomMonth() : month;
+    year = (year === 'rnd' || year === 'xxx') ? getRandomYear() : year;
+    ccv = (ccv === 'rnd' || ccv === 'xxx') ? getRandomCCV() : ccv;
 
     bin = generateBin(bin);
 
